@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
+.venv/
+env/
+
+# Data / outputs / models
+data/
+processed/
+models/
+outputs/
+
+# Temporary / caches
+*.log
+*.tmp
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Git LFS attributes (if enabled later)
+# *.pt
+# *.bin
