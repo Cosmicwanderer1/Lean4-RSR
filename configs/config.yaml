@@ -1,0 +1,42 @@
+project:
+  name: "math-thinker-v2-7b-pro" # 升级为 Pro 版
+  seed: 42
+  output_dir: "./outputs/strategist-lora-mathlib-7b-pro" 
+
+model:
+  base_model_id: "Qwen/Qwen2.5-Math-7B-Instruct"
+  teacher_api_base: "https://api.deepseek.com"
+  teacher_model_name: "deepseek-chat"
+
+data:
+  raw_path: "./data/raw/leandojo_mathlib.jsonl"
+  synthetic_path: "./data/synthetic/mathlib_consensus.jsonl"
+  max_length: 4096        # 【升级】4090 显存充足，拉长到 4k 以覆盖长证明
+
+training:
+  # === RTX 4090 (24GB) 极致性能配置 ===
+  batch_size: 1           # 保持 1，利用 Gradient Accumulation 模拟大 Batch
+  grad_accumulation: 32   # 【升级】有效 Batch Size = 32，梯度估计更稳
+  learning_rate: 1.0e-5   # 【调整】配合大 Batch 和大 Rank，稍微回调 LR
+  num_epochs: 3           # 【调整】训练更充分一点
+  
+  # === LoRA 增强配置 ===
+  lora_r: 128             # 【极致】从 64 翻倍到 128，大幅增加模型拟合能力
+  lora_alpha: 256         # alpha 通常设置为 rank 的 2 倍
+  lora_dropout: 0.05
+  
+  # 【关键】对所有线性层进行微调 (All-Linear)，这是提升推理能力的神器
+  # 这比只微调 q_proj, v_proj 效果好得多
+  lora_target_modules: 
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+
+  use_4bit: true          # 保持 QLoRA，否则 4096 长度 + r128 会 OOM
+
+inference:
+  executor_model_id: "Qwen/Qwen2.5-Math-7B-Instruct"
